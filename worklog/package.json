@@ -1,0 +1,14 @@
+{
+  "name": "github-issues-worklog-poc",
+  "version": "0.1.0",
+  "private": true,
+  "description": "GitHub Issues worklog PoC",
+  "scripts": {
+    "build": "tsc --project tsconfig.json",
+    "test": "npm run build && node --test dist/test"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  }
+}
