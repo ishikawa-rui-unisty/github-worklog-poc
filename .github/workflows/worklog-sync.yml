@@ -1,0 +1,47 @@
+name: Worklog Sync
+
+on:
+  issue_comment:
+    types: [created, edited, deleted]
+
+# Rebuild も同じ group を使う。待機中のイベントをキャンセルしない。
+concurrency:
+  group: worklog-sheet-sync
+  queue: max
+
+jobs:
+  sync:
+    if: ${{ !github.event.issue.pull_request }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: worklog/package-lock.json
+      - uses: google-github-actions/auth@v3
+        id: google-auth
+        with:
+          workload_identity_provider: ${{ vars.GOOGLE_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GOOGLE_SERVICE_ACCOUNT }}
+          token_format: access_token
+          access_token_scopes: https://www.googleapis.com/auth/spreadsheets
+      - name: Install and build
+        working-directory: worklog
+        run: npm ci && npm run build
+      - name: Sync comment
+        env:
+          # 専用トークン未設定時は、まず標準の GITHUB_TOKEN で Project 読取を試す。
+          WORKLOG_GITHUB_TOKEN: ${{ secrets.WORKLOG_GITHUB_TOKEN || github.token }}
+          GITHUB_PROJECT_NUMBER: ${{ vars.GITHUB_PROJECT_NUMBER }}
+          GITHUB_PROJECT_OWNER: ${{ vars.GITHUB_PROJECT_OWNER }}
+          GITHUB_PROJECT_OWNER_TYPE: ${{ vars.GITHUB_PROJECT_OWNER_TYPE }}
+          GOOGLE_SHEETS_SPREADSHEET_ID: ${{ vars.GOOGLE_SHEETS_SPREADSHEET_ID }}
+          GOOGLE_ACCESS_TOKEN: ${{ steps.google-auth.outputs.access_token }}
+          WORKLOG_TIMEZONE: Asia/Tokyo
+        run: node worklog/dist/src/sync.js

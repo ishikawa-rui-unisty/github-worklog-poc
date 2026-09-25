@@ -1,2 +1,3 @@
 worklog/node_modules/
 worklog/dist/
+gha-creds-*.json

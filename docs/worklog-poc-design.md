@@ -219,6 +219,8 @@ GOOGLE_SERVICE_ACCOUNT
 
 Repository / Project Number / Spreadsheet ID は GitHub Actions Variables、機密値は GitHub Secrets または OIDC 構成側で管理する。
 
+GitHub API 認証は、まず workflow 標準の `GITHUB_TOKEN` で対象 Project の読取可否を確認する。権限不足なら GitHub App の短期 Installation Token を優先する。PoC で PAT を使用する場合は暫定措置とし、本番化前に GitHub App 等への置き換えを検討する。`WORKLOG_GITHUB_TOKEN` はトークンの種類を固定しない入力名であり、PAT の使用を意味しない。
+
 Google Sheets 認証の本命は次である。
 
 ```text
@@ -263,7 +265,7 @@ GitHub / Sheets Client は薄い adapter に保ち、必要に応じてモック
 | 1 | 既存構成の確認、TypeScript 雛形、package / tsconfig / test 基盤、Config・Domain Model |
 | 2 | `/work` Parser と Parser Unit Test |
 | 3 | WorkLog 同期の純粋関数、ByUser / ByIssue 集計、Unit Test |
-| 4 | GitHub Client、Sheets Client、通常 Sync workflow、concurrency、成功・エラー通知 |
-| 5 | Rebuild workflow、Issue 階層取得、WIF / OIDC、実環境の疎通・回復テスト |
+| 4 | GitHub Client、Sheets Client、通常 Sync workflow、concurrency、成功・エラー通知、WIF / OIDC の認証経路 |
+| 5 | Rebuild workflow、実環境での WIF / OIDC 疎通・回復テスト |
 
 Phase 1〜2 では GitHub API、Google Sheets API、GitHub Actions Workflow、集計、Rebuild を実装しない。
