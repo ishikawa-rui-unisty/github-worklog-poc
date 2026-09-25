@@ -122,7 +122,7 @@ type ParseResult =
 1. 本文を行へ分割し、先頭空白を除いた後に `/work` と空白または行末が続く行を抽出する。
 2. 0 行なら `none`、2 行以上なら `MULTIPLE_COMMANDS`。
 3. 1 行を空白でトークン化し、引数数を検証する。
-4. hours を 0 以上の数値として検証する。
+4. hours を 0 以上の数値として検証し、文字列上で小数第3位以降を切り捨てて百分の1時間へ変換する。
 5. 日付を解析し、年省略時は `createdAt` の指定タイムゾーン上の年を補う。
 6. 実在日を検証して `YYYY-MM-DD` へ正規化する。
 
@@ -179,6 +179,8 @@ postValidationError(issue, comment, error): Promise<void>
 Issue の祖先は再帰的に解決する。取得済み Issue は `Map<IssueKey, IssueInfo>` にキャッシュし、経路中の `visited` Set で循環を検出して `CIRCULAR_ISSUE_HIERARCHY` として失敗させる。親が Project 外でも取得・出力する。`level` は親が揃った後に計算する。
 
 ## 8. 集計
+
+工数は小数第2位までを登録し、集計中は百分の1時間の整数で加算する。出力時だけ時間単位の数値へ戻し、小数の浮動小数点加算誤差を避ける。
 
 ### ByUser
 

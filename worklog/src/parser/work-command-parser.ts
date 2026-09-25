@@ -1,3 +1,5 @@
+import { fromHundredths, parseHoursToHundredths } from "../model/hours.js";
+
 export type WorkCommandError =
   | "MULTIPLE_COMMANDS"
   | "MISSING_HOURS"
@@ -18,7 +20,6 @@ export type ParseResult =
 
 // 行頭の /work だけを認識する。/work2h などはコマンドと見なさない。
 const WORK_COMMAND = /^\/work(?:\s|$)/;
-const HOURS = /^(?:0|[0-9]+(?:\.[0-9]+)?)[hH]$/;
 const MONTH_DAY = /^(\d{2})[\/-](\d{2})$/;
 // 区切り文字を後方参照し、2026/09-17 のような混在を拒否する。
 const FULL_DATE = /^(\d{4})([\/-])(\d{2})\2(\d{2})$/;
@@ -47,15 +48,11 @@ export function parseWorkCommand(
     return { status: "invalid", errorCode: "TOO_MANY_ARGUMENTS" };
   }
 
-  const hoursToken = tokens[1];
-  if (!HOURS.test(hoursToken)) {
+  const hundredths = parseHoursToHundredths(tokens[1]);
+  if (hundredths === null) {
     return { status: "invalid", errorCode: "INVALID_HOURS" };
   }
-
-  const hours = Number(hoursToken.slice(0, -1));
-  if (!Number.isFinite(hours)) {
-    return { status: "invalid", errorCode: "INVALID_HOURS" };
-  }
+  const hours = fromHundredths(hundredths);
 
   // 日付省略時も編集日時ではなく、元の投稿日を基準にする。
   const dateSpecified = tokens.length === 3;

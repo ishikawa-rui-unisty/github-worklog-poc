@@ -24,6 +24,15 @@ test("accepts zero hours and upper-case H", () => {
   });
 });
 
+test("truncates digits beyond the second decimal place", () => {
+  assert.deepEqual(parseWorkCommand("/work 1.239h", createdAt, timezone), {
+    status: "valid", hours: 1.23, workDate: "2026-09-18", dateSpecified: false,
+  });
+  assert.deepEqual(parseWorkCommand("/work 0.009h", createdAt, timezone), {
+    status: "valid", hours: 0, workDate: "2026-09-18", dateSpecified: false,
+  });
+});
+
 test("normalizes every accepted explicit date form", () => {
   for (const input of ["09/17", "09-17", "2025/09/17", "2025-09-17"]) {
     assert.deepEqual(parseWorkCommand(`/work 2h ${input}`, createdAt, timezone), {
