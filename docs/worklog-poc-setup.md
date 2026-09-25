@@ -20,6 +20,8 @@ Phase 4 の通常同期を実行する前に、次を設定する。外部サー
 
 ## 運用上の注意
 
+- 最初の疎通確認は `Worklog Connection Check` を手動実行する。Project の対象 Issue 件数と Spreadsheet のシート名だけを読み、GitHub コメントや Sheets は変更しない。
+
 - Project から外した Issue の既存 WorkLog は維持する。ただし、その `/work` コメントを後で編集すると通常 Sync は現在の Project 所属に基づいて明細を削除する。
 - GitHub Actions の同一 concurrency group で WorkLogs 全件の読み書きを直列化する。将来の Rebuild workflow も `worklog-sheet-sync` を使う。
 - Sheets 書込みは複数 API 呼出しからなる。途中で失敗した場合は workflow を再実行するか Rebuild で回復する。

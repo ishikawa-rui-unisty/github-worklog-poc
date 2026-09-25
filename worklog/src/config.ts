@@ -2,7 +2,7 @@ export type WorklogConfig = {
   timezone: string;
 };
 
-export type RuntimeConfig = WorklogConfig & {
+export type ConnectionConfig = WorklogConfig & {
   repository: string;
   projectOwner: string;
   projectOwnerType: "organization" | "user";
@@ -10,8 +10,9 @@ export type RuntimeConfig = WorklogConfig & {
   spreadsheetId: string;
   githubToken: string;
   googleAccessToken: string;
-  eventPath: string;
 };
+
+export type RuntimeConfig = ConnectionConfig & { eventPath: string };
 
 export const DEFAULT_TIMEZONE = "Asia/Tokyo";
 
@@ -31,7 +32,7 @@ export function getWorklogConfig(
 }
 
 /** 外部連携に必要な値は、同期の開始前にまとめて検証する。 */
-export function getRuntimeConfig(environment: NodeJS.ProcessEnv = process.env): RuntimeConfig {
+export function getConnectionConfig(environment: NodeJS.ProcessEnv = process.env): ConnectionConfig {
   const required = (name: string): string => {
     const value = environment[name]?.trim();
     if (!value) throw new Error(`Missing ${name}`);
@@ -56,6 +57,11 @@ export function getRuntimeConfig(environment: NodeJS.ProcessEnv = process.env): 
     spreadsheetId: required("GOOGLE_SHEETS_SPREADSHEET_ID"),
     githubToken: required("WORKLOG_GITHUB_TOKEN"),
     googleAccessToken: required("GOOGLE_ACCESS_TOKEN"),
-    eventPath: required("GITHUB_EVENT_PATH"),
   };
+}
+
+export function getRuntimeConfig(environment: NodeJS.ProcessEnv = process.env): RuntimeConfig {
+  const eventPath = environment.GITHUB_EVENT_PATH?.trim();
+  if (!eventPath) throw new Error("Missing GITHUB_EVENT_PATH");
+  return { ...getConnectionConfig(environment), eventPath };
 }

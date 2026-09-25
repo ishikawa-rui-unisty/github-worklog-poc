@@ -23,6 +23,14 @@ export class SheetsClient {
     return response.json() as Promise<T>;
   }
 
+  /** 認証と Spreadsheet 参照だけを確認し、内容は変更しない。 */
+  async listSheetNames(): Promise<string[]> {
+    const metadata = await this.request<{ sheets?: { properties: { title: string } }[] }>(
+      "?fields=sheets(properties(title))",
+    );
+    return (metadata.sheets ?? []).map((sheet) => sheet.properties.title);
+  }
+
   /** 6 シートを用意する。手動管理シートが既にあれば変更しない。 */
   async ensureSheets(): Promise<Record<SheetName, number>> {
     const metadata = await this.request<{ sheets?: { properties: { sheetId: number; title: string } }[] }>(
